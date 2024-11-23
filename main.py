@@ -1,3 +1,5 @@
+# main.py
+
 import streamlit as st
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -33,6 +35,10 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 modelo_Reglineal = LinearRegression()
 modelo_Reglineal.fit(X_train, y_train)
 
+# Calcular la media y desviación estándar del precio de venta
+mean_price = y_train.mean()
+std_price = y_train.std()
+
 # Aplicación de Streamlit
 st.title('Predicción de Precios de Autos')
 
@@ -67,5 +73,25 @@ if st.button('Predecir'):
     # Realizar la predicción
     prediction = modelo_Reglineal.predict(input_df_encoded)
 
+    estimacion = prediction[0]
+    desviaciones = (estimacion - mean_price) / std_price
+
     st.subheader('Precio de venta estimado:')
-    st.write(f'${prediction[0]:,.2f}')
+    st.write(f'${estimacion:,.2f}')
+
+    # Mostrar el rango normal de precio
+    st.write(f"El rango normal de precio de este vehículo es entre ${round(estimacion - std_price, 2):,.2f} y ${round(estimacion + std_price, 2):,.2f}")
+
+    # Mostrar la recomendación basada en desviaciones
+    if desviaciones > 3:
+        st.write("🚫 El automóvil está **muy por encima** de su valor de mercado; se recomienda **no comprar**.")
+    elif desviaciones > 2:
+        st.write("⚠️ El automóvil está **significativamente por encima** de su valor de mercado; se recomienda **no comprar**.")
+    elif desviaciones > 1:
+        st.write("ℹ️ El automóvil se encuentra **por encima** de su valor de mercado; se recomienda **negociar el precio**.")
+    elif desviaciones > -1:
+        st.write("✅ El automóvil se encuentra en el **precio promedio** de mercado; comprar el vehículo observando su condición.")
+    elif desviaciones > -2:
+        st.write("👍 El automóvil se encuentra **por debajo** de su precio de mercado; se recomienda **comprar el vehículo**.")
+    else:
+        st.write("🏆 El precio del automóvil se encuentra **significativamente por debajo** del precio del mercado; se recomienda comprarlo posteriormente a una **inspección técnica**.")
